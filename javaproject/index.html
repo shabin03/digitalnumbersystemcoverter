@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number System Converter</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif; background: #f2f2f2; color: #111;
+    min-height: 100vh; display: flex; align-items: center;
+    justify-content: center; padding: 16px;
+  }
+  .card {
+    background: #fff; border: 2px solid #111; border-radius: 12px;
+    padding: 28px; width: 100%; max-width: 420px;
+  }
+  h1 { font-size: 1.5rem; margin-bottom: 20px; }
+  label { display: block; font-weight: bold; margin: 14px 0 6px; }
+  input {
+    width: 100%; padding: 12px; font-family: monospace; font-size: 1.05rem;
+    border: 2px solid #111; border-radius: 8px;
+  }
+  input.invalid { border-color: #c00; }
+  .error { color: #c00; min-height: 1.2em; margin-top: 12px; }
+  button {
+    width: 100%; margin-top: 8px; padding: 12px; background: #111;
+    color: #fff; font-size: 1rem; border: none; border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+<main class="card">
+  <h1>Number System Converter</h1>
+
+  <label>Binary (base 2)</label>
+  <input data-base="2" placeholder="e.g. 1011">
+
+  <label>Octal (base 8)</label>
+  <input data-base="8" placeholder="e.g. 13">
+
+  <label>Decimal (base 10)</label>
+  <input data-base="10" placeholder="e.g. 11">
+
+  <label>Hexadecimal (base 16)</label>
+  <input data-base="16" placeholder="e.g. B">
+
+  <p id="error" class="error"></p>
+  <button id="clear">Clear</button>
+</main>
+
+<script>
+  const inputs = document.querySelectorAll("input");
+  const errorBox = document.getElementById("error");
+  const valid = { 2: /^[01]+$/, 8: /^[0-7]+$/, 10: /^[0-9]+$/, 16: /^[0-9a-fA-F]+$/ };
+
+  function toBigInt(text, base) {
+    let v = 0n;
+    for (const ch of text.toLowerCase()) v = v * BigInt(base) + BigInt(parseInt(ch, 16));
+    return v;
+  }
+
+  function convert(src) {
+    const base = Number(src.dataset.base);
+    const text = src.value.trim();
+    inputs.forEach(i => i.classList.remove("invalid"));
+    errorBox.textContent = "";
+
+    if (text === "") { inputs.forEach(i => { if (i !== src) i.value = ""; }); return; }
+    if (!valid[base].test(text)) {
+      src.classList.add("invalid");
+      errorBox.textContent = "Invalid digit for base " + base;
+      return;
+    }
+    const value = toBigInt(text, base);
+    inputs.forEach(i => {
+      if (i !== src) i.value = value.toString(Number(i.dataset.base)).toUpperCase();
+    });
+  }
+inputs.forEach(i => i.addEventListener("input", () => convert(i)));
+  document.getElementById("clear").onclick = () => {
+    inputs.forEach(i => { i.value = ""; i.classList.remove("invalid"); });
+    errorBox.textContent = "";
+  };
+</script>
+</body>
+</html>
